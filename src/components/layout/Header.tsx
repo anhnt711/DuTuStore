@@ -5,6 +5,8 @@ import { Heart, ShoppingCart, Search, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store'
 
+const serif = { fontFamily: "'Cormorant Garamond',Georgia,serif" }
+
 const navLinks = [
   { href: '/san-pham', label: 'Sản phẩm' },
   { href: '/khuyen-mai', label: 'Khuyến mãi' },
@@ -21,122 +23,82 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (search.trim()) {
-      router.push(`/san-pham?q=${encodeURIComponent(search.trim())}`)
-      setMobileOpen(false)
-    }
+    if (search.trim()) { router.push(`/san-pham?q=${encodeURIComponent(search.trim())}`); setMobileOpen(false) }
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center gap-4">
+    <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,.94)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #ecedf2' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 flex-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1e3a8a] to-[#0f1729] flex items-center justify-center text-white font-bold text-lg" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-            D
-          </div>
-          <div className="hidden sm:flex flex-col leading-none">
-            <span className="font-bold text-[#0f1729] text-base" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>Du Tú Số To</span>
-            <span className="text-[10px] text-[#8593ad] tracking-widest uppercase">iPhone Store</span>
+        <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
+          <div style={{ ...serif, width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#1e3a8a,#0a0f1e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: 700, fontSize: 20, boxShadow: '0 4px 12px rgba(26,50,114,.35)' }}>D</div>
+          <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <span style={{ ...serif, fontWeight: 700, color: '#0a0f1e', fontSize: 17, lineHeight: 1 }}>Du Tú Số To</span>
+            <span style={{ fontSize: 9, color: '#8593ad', letterSpacing: '0.18em', textTransform: 'uppercase' }}>iPhone Store</span>
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1 ml-2">
+        {/* Desktop nav */}
+        <nav className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                pathname.startsWith(link.href)
-                  ? 'bg-[#eef2fb] text-[#1e3a8a]'
-                  : 'text-[#33405c] hover:bg-gray-50'
-              }`}
-            >
+            <Link key={link.href} href={link.href} style={{
+              padding: '7px 14px', borderRadius: 99, fontSize: 13.5, fontWeight: 600,
+              textDecoration: 'none', transition: 'all .15s',
+              background: pathname.startsWith(link.href) ? '#eef2fb' : 'transparent',
+              color: pathname.startsWith(link.href) ? '#1a3272' : '#33405c'
+            }}>
               {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Search - desktop */}
-        <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2 flex-1 max-w-xs bg-[#f4f6fb] border border-gray-100 rounded-full px-3.5 py-2.5 ml-auto">
-          <Search size={14} className="text-[#8593ad] flex-none" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm iPhone..."
-            className="bg-transparent outline-none text-sm text-[#0f1729] placeholder:text-[#8593ad] w-full"
-          />
+        {/* Search */}
+        <form onSubmit={handleSearch} className="hide-mobile" style={{ marginLeft: 'auto', flex: 1, maxWidth: 220, display: 'flex', alignItems: 'center', gap: 8, background: '#f4f6fb', border: '1px solid #ecedf2', borderRadius: 99, padding: '9px 16px' }}>
+          <Search size={13} color="#8593ad" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm iPhone..." style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#0a0f1e', width: '100%' }} />
         </form>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 ml-auto md:ml-0">
+        {/* Right actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }} className="actions-no-ml-mobile">
           {/* Wishlist */}
-          <Link
-            href="/san-pham?wishlist=true"
-            className="relative w-10 h-10 rounded-full border border-gray-100 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors"
-            title="Yêu thích"
-          >
-            <Heart size={18} className="text-[#33405c]" />
+          <Link href="/san-pham" style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%', border: '1px solid #ecedf2', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', background: '#fff' }}>
+            <Heart size={16} color="#33405c" />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4.5 h-4.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1e3a8a] border-2 border-white text-white text-[9px] font-bold flex items-center justify-center">
-                {wishlist.length}
-              </span>
+              <span style={{ position: 'absolute', top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 99, background: '#1a3272', border: '2px solid #fff', color: '#fff', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>{wishlist.length}</span>
             )}
           </Link>
-
           {/* Cart */}
-          <Link
-            href="/gio-hang"
-            className="relative w-10 h-10 rounded-full bg-[#0f1729] flex items-center justify-center hover:bg-[#1e3a8a] transition-colors"
-            title="Giỏ hàng"
-          >
-            <ShoppingCart size={18} className="text-white" />
+          <Link href="/gio-hang" style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%', background: '#0a0f1e', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+            <ShoppingCart size={16} color="#ffffff" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1e3a8a] border-2 border-white text-white text-[9px] font-bold flex items-center justify-center">
-                {cartCount}
-              </span>
+              <span style={{ position: 'absolute', top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 99, background: '#1a3272', border: '2px solid #fff', color: '#fff', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>{cartCount}</span>
             )}
           </Link>
-
-          {/* Mobile menu toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center"
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          {/* Hamburger */}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="show-mobile" style={{ display: 'none', width: 38, height: 38, borderRadius: '50%', border: '1px solid #ecedf2', background: '#fff', cursor: 'pointer', alignItems: 'center', justifyContent: 'center' }}>
+            {mobileOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 pb-4">
-          <form onSubmit={handleSearch} className="flex items-center gap-2 bg-[#f4f6fb] border border-gray-100 rounded-full px-3.5 py-2.5 mt-3">
-            <Search size={14} className="text-[#8593ad] flex-none" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm iPhone..."
-              className="bg-transparent outline-none text-sm text-[#0f1729] placeholder:text-[#8593ad] w-full"
-            />
+        <div style={{ borderTop: '1px solid #ecedf2', background: '#fff', padding: '12px 20px 20px' }} className="show-mobile-block">
+          <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f6fb', border: '1px solid #ecedf2', borderRadius: 99, padding: '10px 16px', marginBottom: 10 }}>
+            <Search size={13} color="#8593ad" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm iPhone..." style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#0a0f1e', width: '100%' }} />
           </form>
-          <nav className="flex flex-col gap-1 mt-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                  pathname.startsWith(link.href)
-                    ? 'bg-[#eef2fb] text-[#1e3a8a]'
-                    : 'text-[#33405c] hover:bg-gray-50'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{
+              display: 'block', padding: '12px 14px', borderRadius: 12, fontSize: 13.5, fontWeight: 600,
+              textDecoration: 'none', marginBottom: 2,
+              background: pathname.startsWith(link.href) ? '#eef2fb' : 'transparent',
+              color: pathname.startsWith(link.href) ? '#1a3272' : '#33405c'
+            }}>
+              {link.label}
+            </Link>
+          ))}
         </div>
       )}
     </header>

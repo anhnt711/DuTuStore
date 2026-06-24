@@ -1,17 +1,19 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 import ProductCard from '@/components/product/ProductCard'
 import { mockProducts } from '@/lib/mockData'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
+import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+
+const serif = { fontFamily: "'Cormorant Garamond',Georgia,serif" }
 
 const LINES = ['Tất cả', 'iPhone 15 Series', 'iPhone 14 Series', 'iPhone 13 Series', 'iPhone SE Series']
 const SORTS = [
   { label: 'Mới nhất', value: 'newest' },
-  { label: 'Giá thấp', value: 'price-asc' },
-  { label: 'Giá cao', value: 'price-desc' },
-  { label: 'Đánh giá cao', value: 'rating' },
+  { label: 'Giá thấp → cao', value: 'price-asc' },
+  { label: 'Giá cao → thấp', value: 'price-desc' },
+  { label: 'Đánh giá cao nhất', value: 'rating' },
 ]
 
 function CatalogContent() {
@@ -37,94 +39,100 @@ function CatalogContent() {
     return list
   }, [search, line, sort, priceMax, onlyDeal])
 
+  const clearAll = () => { setSearch(''); setLine('Tất cả'); setOnlyDeal(false); setPriceMax(50000000) }
+
   return (
-    <div className="max-w-screen-xl mx-auto px-4 py-8">
-      {/* Page title */}
-      <div className="mb-6">
-        <div className="text-xs font-semibold tracking-widest text-[#1e3a8a] uppercase">Cửa hàng</div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-[#0f1729] mt-2">Tất cả iPhone</h1>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 20px 64px', width: '100%' }}>
+      {/* Page header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', color: '#1a3272', textTransform: 'uppercase', marginBottom: 6 }}>Cửa hàng</div>
+        <h1 style={{ ...serif, fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 600, color: '#0a0f1e', lineHeight: 1.1, margin: 0 }}>
+          Tất cả iPhone
+        </h1>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar filters - desktop */}
-        <aside className="hidden lg:block w-56 flex-none">
-          <div className="sticky top-24">
-            <FilterPanel
-              line={line} setLine={setLine}
-              priceMax={priceMax} setPriceMax={setPriceMax}
-              onlyDeal={onlyDeal} setOnlyDeal={setOnlyDeal}
-            />
+      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+
+        {/* Desktop sidebar */}
+        <aside style={{ width: 210, flexShrink: 0, display: 'none' }} className="lg-show">
+          <div style={{ position: 'sticky', top: 88 }}>
+            <FilterPanel line={line} setLine={setLine} priceMax={priceMax} setPriceMax={setPriceMax} onlyDeal={onlyDeal} setOnlyDeal={setOnlyDeal} onClear={clearAll} />
           </div>
         </aside>
 
-        <div className="flex-1 min-w-0">
-          {/* Search + sort bar */}
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
-            <div className="flex items-center gap-2 flex-1 min-w-[180px] bg-[#f4f6fb] border border-gray-100 rounded-full px-3.5 py-2.5">
-              <Search size={14} className="text-[#8593ad] flex-none" />
+        {/* Main */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+
+          {/* Toolbar */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* Search */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 180, maxWidth: 280, background: '#f4f6fb', border: '1px solid #e8ecf4', borderRadius: 99, padding: '10px 16px' }}>
+              <Search size={13} color="#8593ad" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm sản phẩm..."
-                className="bg-transparent outline-none text-sm text-[#0f1729] placeholder:text-[#8593ad] w-full"
+                style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#0a0f1e', width: '100%' }}
               />
-              {search && <X size={14} className="text-[#8593ad] cursor-pointer" onClick={() => setSearch('')} />}
+              {search && <button onClick={() => setSearch('')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}><X size={13} color="#8593ad" /></button>}
             </div>
 
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="text-sm border border-gray-100 rounded-full px-4 py-2.5 bg-white text-[#0f1729] outline-none cursor-pointer"
-            >
-              {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
+            {/* Sort */}
+            <div style={{ position: 'relative' }}>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                style={{ appearance: 'none', fontSize: 13, border: '1px solid #e8ecf4', borderRadius: 99, paddingLeft: 16, paddingRight: 32, paddingTop: 10, paddingBottom: 10, background: '#ffffff', color: '#0a0f1e', outline: 'none', cursor: 'pointer', fontWeight: 600 }}
+              >
+                {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+              <ChevronDown size={12} color="#8593ad" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            </div>
 
+            {/* Mobile filter btn */}
             <button
               onClick={() => setShowFilters(true)}
-              className="lg:hidden flex items-center gap-2 border border-gray-100 rounded-full px-4 py-2.5 text-sm font-medium text-[#0f1729]"
+              className="mobile-filter-btn"
+              style={{ display: 'none', alignItems: 'center', gap: 6, border: '1px solid #e8ecf4', borderRadius: 99, padding: '10px 16px', fontSize: 13, fontWeight: 600, background: '#fff', cursor: 'pointer', color: '#0a0f1e' }}
             >
-              <SlidersHorizontal size={14} />
-              Lọc
+              <SlidersHorizontal size={13} /> Lọc
             </button>
           </div>
 
           {/* Line pills */}
-          <div className="flex gap-2 flex-wrap mb-6">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
             {LINES.map((l) => (
               <button
                 key={l}
                 onClick={() => setLine(l)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  line === l
-                    ? 'bg-[#0f1729] text-white'
-                    : 'bg-[#f4f6fb] text-[#33405c] hover:bg-[#eef2fb]'
-                }`}
+                style={{
+                  padding: '8px 18px', borderRadius: 99, fontSize: 12.5, fontWeight: 700,
+                  border: 'none', cursor: 'pointer', transition: 'all .2s',
+                  background: line === l ? '#0a0f1e' : '#f4f6fb',
+                  color: line === l ? '#ffffff' : '#33405c',
+                  boxShadow: line === l ? '0 4px 14px rgba(10,15,30,.25)' : 'none'
+                }}
               >
                 {l}
               </button>
             ))}
           </div>
 
-          {/* Results count */}
-          <div className="text-sm text-[#8593ad] mb-5">
+          {/* Count */}
+          <div style={{ fontSize: 13, color: '#8593ad', marginBottom: 20, fontWeight: 600 }}>
             {products.length} sản phẩm
           </div>
 
-          {/* Grid */}
+          {/* Product grid */}
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))', gap: 20 }}>
               {products.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           ) : (
-            <div className="text-center py-20 bg-[#f7f9fc] border border-[#eef1f7] rounded-2xl">
-              <div className="font-serif text-xl font-semibold text-[#0f1729]">Không tìm thấy sản phẩm</div>
-              <div className="text-sm text-[#8593ad] mt-2">Hãy thử điều chỉnh bộ lọc của bạn.</div>
-              <button
-                onClick={() => { setSearch(''); setLine('Tất cả'); setOnlyDeal(false); setPriceMax(50000000) }}
-                className="mt-4 bg-[#1e3a8a] text-white rounded-full px-6 py-2.5 text-sm font-semibold"
-              >
-                Xoá bộ lọc
-              </button>
+            <div style={{ textAlign: 'center', padding: '80px 20px', background: '#f7f9fc', borderRadius: 20, border: '1px solid #eef1f7' }}>
+              <div style={{ ...serif, fontSize: 22, fontWeight: 600, color: '#0a0f1e' }}>Không tìm thấy sản phẩm</div>
+              <div style={{ fontSize: 13, color: '#8593ad', marginTop: 8 }}>Hãy thử điều chỉnh bộ lọc của bạn.</div>
+              <button onClick={clearAll} style={{ marginTop: 16, background: '#1a3272', color: '#fff', border: 'none', borderRadius: 99, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Xoá bộ lọc</button>
             </div>
           )}
         </div>
@@ -132,18 +140,16 @@ function CatalogContent() {
 
       {/* Mobile filter drawer */}
       {showFilters && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowFilters(false)} />
-          <div className="relative ml-auto w-72 bg-white h-full p-6 overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-[#0f1729]">Bộ lọc</h3>
-              <button onClick={() => setShowFilters(false)}><X size={20} /></button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.35)' }} onClick={() => setShowFilters(false)} />
+          <div style={{ position: 'absolute', right: 0, top: 0, width: 290, height: '100%', background: '#fff', padding: 24, overflowY: 'auto', boxShadow: '-8px 0 30px rgba(0,0,0,.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ ...serif, fontWeight: 700, color: '#0a0f1e', fontSize: 20, margin: 0 }}>Bộ lọc</h3>
+              <button onClick={() => setShowFilters(false)} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #e8ecf4', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={16} />
+              </button>
             </div>
-            <FilterPanel
-              line={line} setLine={(v) => { setLine(v); setShowFilters(false) }}
-              priceMax={priceMax} setPriceMax={setPriceMax}
-              onlyDeal={onlyDeal} setOnlyDeal={setOnlyDeal}
-            />
+            <FilterPanel line={line} setLine={(v) => { setLine(v); setShowFilters(false) }} priceMax={priceMax} setPriceMax={setPriceMax} onlyDeal={onlyDeal} setOnlyDeal={setOnlyDeal} onClear={clearAll} />
           </div>
         </div>
       )}
@@ -151,65 +157,51 @@ function CatalogContent() {
   )
 }
 
-function FilterPanel({ line, setLine, priceMax, setPriceMax, onlyDeal, setOnlyDeal }: {
+function FilterPanel({ line, setLine, priceMax, setPriceMax, onlyDeal, setOnlyDeal, onClear }: {
   line: string; setLine: (v: string) => void
   priceMax: number; setPriceMax: (v: number) => void
   onlyDeal: boolean; setOnlyDeal: (v: boolean) => void
+  onClear: () => void
 }) {
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       <div>
-        <h4 className="text-xs font-semibold tracking-widest text-[#8593ad] uppercase mb-3">Dòng sản phẩm</h4>
-        <div className="flex flex-col gap-1.5">
-          {LINES.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLine(l)}
-              className={`text-left px-3 py-2 rounded-xl text-sm transition-colors ${
-                line === l ? 'bg-[#eef2fb] text-[#1e3a8a] font-semibold' : 'text-[#33405c] hover:bg-gray-50'
-              }`}
-            >
-              {l}
-            </button>
-          ))}
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', color: '#8593ad', textTransform: 'uppercase', marginBottom: 10 }}>Dòng sản phẩm</div>
+        {LINES.map((l) => (
+          <button key={l} onClick={() => setLine(l)} style={{
+            display: 'block', width: '100%', textAlign: 'left',
+            padding: '10px 12px', borderRadius: 12, border: 'none', cursor: 'pointer',
+            fontSize: 13, fontWeight: l === line ? 700 : 500,
+            background: l === line ? '#eef2fb' : 'transparent',
+            color: l === line ? '#1a3272' : '#33405c',
+            transition: 'all .15s'
+          }}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', color: '#8593ad', textTransform: 'uppercase', marginBottom: 10 }}>Giá tối đa</div>
+        <input type="range" min={5000000} max={50000000} step={1000000} value={priceMax} onChange={(e) => setPriceMax(Number(e.target.value))} style={{ width: '100%', accentColor: '#1a3272' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: '#8593ad' }}>
+          <span>5tr</span>
+          <span style={{ fontWeight: 700, color: '#0a0f1e' }}>{formatPrice(priceMax)}</span>
+          <span>50tr</span>
         </div>
       </div>
-
-      <div>
-        <h4 className="text-xs font-semibold tracking-widest text-[#8593ad] uppercase mb-3">Giá tối đa</h4>
-        <input
-          type="range"
-          min={5000000}
-          max={50000000}
-          step={1000000}
-          value={priceMax}
-          onChange={(e) => setPriceMax(Number(e.target.value))}
-          className="w-full accent-[#1e3a8a]"
-        />
-        <div className="text-sm text-[#0f1729] mt-1 font-semibold">
-          {new Intl.NumberFormat('vi-VN').format(priceMax)}đ
+      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+        <div onClick={() => setOnlyDeal(!onlyDeal)} style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${onlyDeal ? '#1a3272' : '#dde2ec'}`, background: onlyDeal ? '#1a3272' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}>
+          {onlyDeal && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </div>
-      </div>
-
-      <div>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={onlyDeal}
-            onChange={(e) => setOnlyDeal(e.target.checked)}
-            className="w-4 h-4 accent-[#1e3a8a] rounded"
-          />
-          <span className="text-sm text-[#33405c]">Chỉ hàng đang khuyến mãi</span>
-        </label>
-      </div>
+        <span style={{ fontSize: 13, color: '#33405c', userSelect: 'none' }}>Chỉ hàng khuyến mãi</span>
+      </label>
+      <button onClick={onClear} style={{ width: '100%', padding: '10px 0', border: '1px solid #dde2ec', borderRadius: 12, fontSize: 13, fontWeight: 700, color: '#7c89a3', background: '#fff', cursor: 'pointer' }}>
+        Xoá bộ lọc
+      </button>
     </div>
   )
 }
 
 export default function CatalogPage() {
-  return (
-    <Suspense>
-      <CatalogContent />
-    </Suspense>
-  )
+  return <Suspense><CatalogContent /></Suspense>
 }

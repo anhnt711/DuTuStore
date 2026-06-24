@@ -1,7 +1,10 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingBag, BarChart3, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, BarChart3, Settings, LogOut, Menu, X } from 'lucide-react'
+import { useState } from 'react'
+
+const serif = { fontFamily: "'Cormorant Garamond',Georgia,serif" }
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -13,68 +16,85 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [mobileMenu, setMobileMenu] = useState(false)
+  const pageTitle = navItems.find((n) => n.href === pathname)?.label || 'Admin'
+
+  const Sidebar = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0a0f1e' }}>
+      {/* Logo */}
+      <div style={{ padding: '20px 20px', borderBottom: '1px solid rgba(255,255,255,.1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ ...serif, width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#5b8def,#1a3272)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>D</div>
+          <div>
+            <div style={{ ...serif, color: '#fff', fontWeight: 700, fontSize: 15 }}>Du Tú Số To</div>
+            <div style={{ color: '#8593ad', fontSize: 10 }}>Admin Panel</div>
+          </div>
+        </div>
+      </div>
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {navItems.map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} onClick={() => setMobileMenu(false)} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '10px 14px', borderRadius: 12, fontSize: 14, fontWeight: 600,
+            textDecoration: 'none', transition: 'all .15s',
+            background: pathname === href ? '#1a3272' : 'transparent',
+            color: pathname === href ? '#fff' : '#8593ad'
+          }}>
+            <Icon size={16} />
+            {label}
+          </Link>
+        ))}
+      </nav>
+      {/* Footer */}
+      <div style={{ padding: '12px 12px', borderTop: '1px solid rgba(255,255,255,.1)' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: 'none', color: '#8593ad' }}>
+          <LogOut size={16} />
+          Về trang chủ
+        </Link>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen flex bg-[#f7f9fc]">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-56 bg-[#0f1729] flex flex-col z-50 hidden md:flex">
-        {/* Logo */}
-        <div className="p-5 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#5b8def] to-[#1e3a8a] flex items-center justify-center text-white font-bold font-serif">D</div>
-            <div>
-              <div className="text-white font-semibold text-sm font-serif">Du Tú Số To</div>
-              <div className="text-[#8593ad] text-[10px]">Admin Panel</div>
-            </div>
-          </div>
-        </div>
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#f4f6fb' }}>
 
-        {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                pathname === href
-                  ? 'bg-[#1e3a8a] text-white'
-                  : 'text-[#8593ad] hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-white/10">
-          <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#8593ad] hover:bg-white/10 hover:text-white transition-colors">
-            <LogOut size={16} />
-            Về trang chủ
-          </Link>
-        </div>
+      {/* Desktop sidebar */}
+      <aside style={{ width: 220, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50 }} className="hide-mobile">
+        <Sidebar />
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 md:ml-56 flex flex-col">
+      {/* Mobile sidebar overlay */}
+      {mobileMenu && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100 }} className="show-mobile-block">
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)' }} onClick={() => setMobileMenu(false)} />
+          <div style={{ position: 'absolute', left: 0, top: 0, width: 240, height: '100%' }}>
+            <Sidebar />
+          </div>
+        </div>
+      )}
+
+      {/* Main area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: 0 }} className="admin-main">
+
         {/* Top bar */}
-        <header className="bg-white border-b border-[#eef1f7] px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 md:hidden">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#1e3a8a] to-[#0f1729] flex items-center justify-center text-white font-bold text-sm font-serif">D</div>
-            <span className="font-semibold text-[#0f1729] text-sm font-serif">Admin</span>
+        <header style={{ background: '#fff', borderBottom: '1px solid #eef1f7', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* Mobile hamburger */}
+            <button onClick={() => setMobileMenu(true)} className="show-mobile" style={{ display: 'none', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
+              <Menu size={20} color="#0a0f1e" />
+            </button>
+            <h1 style={{ ...serif, fontWeight: 700, color: '#0a0f1e', fontSize: 18, margin: 0 }}>{pageTitle}</h1>
           </div>
-          <div className="hidden md:block">
-            <h1 className="font-semibold text-[#0f1729] capitalize">
-              {navItems.find((n) => n.href === pathname)?.label || 'Admin'}
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#0f1729] flex items-center justify-center text-white font-bold text-xs font-serif">A</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ ...serif, width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,#1a3272,#0a0f1e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14 }}>A</div>
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        {/* Content */}
+        <main style={{ flex: 1, padding: '24px 24px' }}>
+          {children}
+        </main>
       </div>
     </div>
   )
